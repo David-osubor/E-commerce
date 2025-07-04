@@ -6,43 +6,9 @@ import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DocumentData } from "firebase/firestore";
 
-// Mock product data with merchant details
-const productData = {
-  id: "1",
-  name: "Apple iPhone 7 64 GB Gray",
-  price: "₦20,000",
-  negotiable: true,
-  images: [
-    "/prod1.png",
-    "/prod2.png",
-    "/prod3.png",
-    "/prod4.png",
-    "/prod5.png",
-  ],
-  specifications: {
-    brand: "Apple",
-    model: "iPhone 7",
-    color: "Gray",
-    condition: "Fairly Used",
-    secondCondition: "No faults",
-    internalStorage: "64GB",
-    cardSlot: "No",
-    batteryHealth: "80%",
-  },
-  description:
-    "iPhone in good working condition with a fully functional Face ID, ensuring seamless unlocking and authentication. The screen and back are intact with no cracks, providing a clean and presentable look. Battery health is at 71%, which may require charging more frequently but does not affect the phone's overall performance. All essential features, including the camera, speakers, buttons, and connectivity functions, work perfectly without any issues. Ideal for daily use or as a backup device.",
-  merchant: {
-    id: "merchant123",
-    name: "Tech Gadgets Store",
-    rating: 4.5,
-    reviews: 42,
-    phone: "+2349025777310", // WhatsApp-enabled phone number
-    location: "Lagos, Nigeria",
-    joined: "Member since 2022",
-    image: "/merchant-placeholder.jpg",
-  },
-};
+
 
 const relatedProducts = [
   {
@@ -69,21 +35,22 @@ const relatedProducts = [
 ];
 
 interface ProductDetailPageProps {
-  productId: string;
+  product: DocumentData;
 }
 
 export default function ProductDetailPage({
-  productId,
+  product,
 }: ProductDetailPageProps) {
+  console.log(product.imageUrls)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const handleWhatsAppClick = () => {
     // Create WhatsApp message with product details
     const message = `Hello ${
-      productData.merchant.name
-    },\n\nI'm interested in your product:\n\n*${productData.name}*\nPrice: ${
-      productData.price
-    }\n\n${productData.description.substring(
+      product.brandName
+    },\n\nI'm interested in your product:\n\n*${product.name}*\nPrice: ${
+      product.price
+    }\n\n${product.description.substring(
       0,
       100
     )}...\n\nCould you provide more details?`;
@@ -93,7 +60,7 @@ export default function ProductDetailPage({
 
     // Open WhatsApp with the merchant's number and pre-filled message
     window.open(
-      `https://wa.me/${productData.merchant.phone}?text=${encodedMessage}`,
+      `https://wa.me/${product.merchant.phone}?text=${encodedMessage}`,
       "_blank"
     );
   };
@@ -110,36 +77,37 @@ export default function ProductDetailPage({
               <div className="bg-gray-100 rounded-lg overflow-hidden h-[300px]">
                 <Image
                   src={
-                    productData.images[selectedImageIndex] || "/placeholder.svg"
+                    product.imageUrls[selectedImageIndex] || "/placeholder.svg"
                   }
-                  alt={productData.name}
+                  alt={product.name}
                   width={400}
                   height={500}
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              {/* Thumbnail Images */}
+              {/* Thumbnail imageUrls */}
               <div className="grid grid-cols-4 gap-2">
-                {productData.images.slice(0, 4).map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-colors ${
-                      selectedImageIndex === index
-                        ? "border-blue-500"
-                        : "border-transparent hover:border-gray-300"
-                    }`}
-                  >
-                    <Image
-                      src={image || "/placeholder.svg"}
-                      alt={`${productData.name} view ${index + 1}`}
-                      width={100}
-                      height={100}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
+                {Array.isArray(product.imageUrls) &&
+                  product.imageUrls.slice(0, 4).map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-colors ${
+                        selectedImageIndex === index
+                          ? "border-blue-500"
+                          : "border-transparent hover:border-gray-300"
+                      }`}
+                    >
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${product.name} view ${index + 1}`}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
               </div>
             </div>
 
@@ -148,9 +116,9 @@ export default function ProductDetailPage({
               {/* Price and Negotiable Badge */}
               <div className="flex items-center space-x-4">
                 <h1 className="text-4xl font-bold text-blue-600">
-                  {productData.price}
+                  ₦ {product.price}
                 </h1>
-                {productData.negotiable && (
+                {product.negotiable && (
                   <Badge
                     variant="secondary"
                     className="bg-gray-200 text-gray-700 px-3 py-1"
@@ -164,11 +132,11 @@ export default function ProductDetailPage({
               <div className="border-t border-b border-gray-200 py-4">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center uppercase">
-                    {productData.merchant.name.slice(0,2)}
+                    {product.brandName.slice(0, 2)}
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">
-                      {productData.merchant.name}
+                      {product.brandName}
                     </h3>
                     <div className="flex items-center space-x-2">
                       <div className="flex items-center">
@@ -176,7 +144,7 @@ export default function ProductDetailPage({
                           <svg
                             key={i}
                             className={`w-4 h-4 ${
-                              i < Math.floor(productData.merchant.rating)
+                              i < Math.floor(5)
                                 ? "text-yellow-400"
                                 : "text-gray-300"
                             }`}
@@ -187,13 +155,10 @@ export default function ProductDetailPage({
                           </svg>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-600">
-                        ({productData.merchant.reviews} reviews)
-                      </span>
+                      <span className="text-sm text-gray-600">(4 reviews)</span>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
-                      {productData.merchant.location} •{" "}
-                      {productData.merchant.joined}
+                      OOU Ibogun • 2 days ago
                     </p>
                   </div>
                 </div>
@@ -202,59 +167,24 @@ export default function ProductDetailPage({
               {/* Specifications */}
               <div className="space-y-3">
                 <div className="flex justify-between py-2">
-                  <span className="font-medium text-gray-900">Brand:</span>
-                  <span className="text-gray-700">
-                    {productData.specifications.brand}
-                  </span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="font-medium text-gray-900">Model:</span>
-                  <span className="text-gray-700">
-                    {productData.specifications.model}
-                  </span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="font-medium text-gray-900">Color:</span>
-                  <span className="text-gray-700">
-                    {productData.specifications.color}
-                  </span>
-                </div>
-                <div className="flex justify-between py-2">
                   <span className="font-medium text-gray-900">Condition:</span>
-                  <span className="text-gray-700">
-                    {productData.specifications.condition}
+                  <span className="capitalize text-gray-700">
+                    {product.condition}
                   </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="font-medium text-gray-900">
-                    Second Condition:
-                  </span>
-                  <span className="text-gray-700">
-                    {productData.specifications.secondCondition}
-                  </span>
+                  <span className="font-medium text-gray-900">Category:</span>
+                  <span className="text-gray-700">{product.category}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="font-medium text-gray-900">
-                    Internal Storage:
-                  </span>
-                  <span className="text-gray-700">
-                    {productData.specifications.internalStorage}
+                  <span className="font-medium text-gray-900">Negotiable:</span>
+                  <span className="uppercase text-gray-700">
+                    {product.negotiable}
                   </span>
                 </div>
-                <div className="flex justify-between py-2">
-                  <span className="font-medium text-gray-900">Card Slot:</span>
-                  <span className="text-gray-700">
-                    {productData.specifications.cardSlot}
-                  </span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="font-medium text-gray-900">
-                    Battery Health:
-                  </span>
-                  <span className="text-gray-700">
-                    {productData.specifications.batteryHealth}
-                  </span>
-                </div>
+                <p className="mt-5 text-gray-700 leading-relaxed">
+                  {product.specifications}
+                </p>
               </div>
 
               {/* WhatsApp Button */}
@@ -273,10 +203,10 @@ export default function ProductDetailPage({
             {/* Product Description */}
             <div className="lg:col-span-2">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                {productData.name}
+                {product.name}
               </h2>
               <p className="text-gray-700 leading-relaxed">
-                {productData.description}
+                {product.description}
               </p>
             </div>
 

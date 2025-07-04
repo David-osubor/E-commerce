@@ -10,8 +10,6 @@ export default function Header() {
   const pathname = usePathname()
   const isMerchant = pathname.includes("/merchant")
 
-  console.log(user?.emailVerified)
-
   return (
     <header className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-4">
       <div className="container mx-auto flex items-center justify-between">
@@ -33,7 +31,7 @@ export default function Header() {
                 <Button className="rounded-none bg-orange-500">Sell</Button>
               </Link>
               )}
-              {/* <Button size="sm" variant="destructive" onClick={logout}>Logout</Button> */}
+              <Button size="sm" variant="destructive" onClick={logout}>Logout</Button>
             </>
           ) : (
             <>

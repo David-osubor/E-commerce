@@ -7,62 +7,54 @@ import Image from "next/image";
 import AddProductDialog from "./AddProductDialog";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { addNewProduct, getMerchantByUserId, getMerchantProducts } from "@/lib/firebase/crud";
+import { DocumentData } from "firebase/firestore";
 
-// Mock product data
-const mockProducts = [
-  {
-    id: 1,
-    name: "Iphone 7 64gb",
-    image: "/prod1.png",
-    category: "Application",
-    createdAt: "2 days ago",
-  },
-  {
-    id: 2,
-    name: "Samsung A50",
-    image: "/prod2.png",
-    category: "Application",
-    createdAt: "1 hour ago",
-  },
-  {
-    id: 3,
-    name: "Iphone 7 64gb",
-    image: "/prod3.png",
-    category: "Application",
-    createdAt: "30 mins ago",
-  },
-  {
-    id: 4,
-    name: "Iphone 7 64gb",
-    image: "/prod1.png",
-    category: "Application",
-    createdAt: "32 mins ago",
-  },
-  {
-    id: 5,
-    name: "Itel A3",
-    image: "/prod4.png",
-    category: "Application",
-    createdAt: "15 mins ago",
-  },
-  {
-    id: 6,
-    name: "Iphone 7 64gb",
-    image: "/prod3.png",
-    category: "Application",
-    createdAt: "1 min ago",
-  },
-];
+
 
 const categories = ["All", "Application", "Utensils", "Food stuff"];
 
 export default function MerchantDashboard() {
-  // const { user } = useAuth()
-  // const router = useRouter()
+  const { user, logout, loading } = useAuth();
+  const router = useRouter();
+  const [merchant, setMerchant] = useState<DocumentData | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [products, setProducts] = useState(mockProducts);
+  const [products, setProducts] = useState<DocumentData[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  useEffect(() => {
+    
+    const fetchMerchantData = async () => {
+      if (!user?.uid) {
+        if(!loading)  router.push('/');
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const response = await getMerchantByUserId(user.uid);
+        if (response) {
+          setMerchant({...response.data,id: response.id});
+          const merchantProducts = await getMerchantProducts(response.id);
+          setProducts(merchantProducts || []);
+        } else {
+          console.error("No merchant data available");
+        }
+
+      } catch (error) {
+        console.error("Failed to fetch merchant:", error);
+        // Handle error (e.g., show toast notification)
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMerchantData();
+  }, [user?.uid]); // Only re-run if user.uid changes
 
   const filteredProducts =
     selectedCategory === "All"
@@ -71,23 +63,46 @@ export default function MerchantDashboard() {
 
   const handleDeleteProduct = (productId: number) => {
     setProducts(products.filter((product) => product.id !== productId));
+    // TODO: Add actual delete from Firestore
   };
 
   const handleEditProduct = (productId: number) => {
-    // Handle edit functionality
+    // TODO: Implement edit functionality
     console.log("Edit product:", productId);
   };
 
-  const handleAddProduct = (productData: any) => {
-    const newProduct = {
-      id: Date.now(),
-      name: productData.name,
-      image: "/prod1.png",
-      category: productData.category,
-      createdAt: "Just now",
-    };
-    setProducts([newProduct, ...products]);
-    setIsAddProductOpen(false);
+  const handleAddProduct = async (productData: any) => {
+    if (!merchant) {
+      console.error("No merchant data available");
+      return;
+    }
+    console.log(merchant)
+
+    try {
+      // Add to Firestore
+      const response = await addNewProduct(
+        productData.name,
+        productData.price,
+        productData.description,
+        productData.specification,
+        productData.condition,
+        productData.category,
+        productData.negotiable,
+        productData.images,
+        merchant.id,
+        merchant.brandName,
+        merchant.whatsappNo
+      );
+      if(response){
+        const newProduct = { ...response.data, id: response.productId };
+        setProducts([newProduct, ...products]);
+        setIsAddProductOpen(false);
+      }
+      
+    } catch (error) {
+      console.error("Failed to add product:", error);
+      // Handle error (e.g., show toast notification)
+    }
   };
 
   return (
@@ -128,12 +143,17 @@ export default function MerchantDashboard() {
                 <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
               </div>
             </div>
-            <span className="text-lg font-medium text-gray-900">Username</span>
+            <span className="text-lg font-medium text-gray-900">
+              {merchant?.brandName || "Merchant"}
+            </span>
           </div>
 
           {/* Logout Button */}
           <div className="mt-auto">
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg">
+            <Button
+              onClick={logout}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg"
+            >
               <LogOut className="w-4 h-4 mr-2" />
               LOG OUT
             </Button>
@@ -157,13 +177,18 @@ export default function MerchantDashboard() {
                 <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-full"></div>
               </div>
             </div>
-            <span className="text-lg font-medium text-gray-900">Username</span>
+            <span className="text-lg font-medium text-gray-900">
+              {merchant?.brandName || "Merchant"}
+            </span>
           </div>
         </div>
 
         {/* Logout Button */}
         <div className="mt-auto">
-          <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg">
+          <Button
+            onClick={logout}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg"
+          >
             <LogOut className="w-4 h-4 mr-2" />
             LOG OUT
           </Button>
@@ -179,7 +204,7 @@ export default function MerchantDashboard() {
               Product Categories
             </h2>
 
-            {/* Category Filters - Scrollable on mobile */}
+            {/* Category Filters */}
             <div className="flex space-x-2 md:space-x-4 overflow-x-auto pb-2 md:pb-0">
               {categories.map((category) => (
                 <Button
@@ -203,14 +228,22 @@ export default function MerchantDashboard() {
           <Button
             onClick={() => setIsAddProductOpen(true)}
             className="md:w-auto w-full bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-3 rounded-lg"
+            disabled={isLoading}
           >
             <Plus className="w-4 h-4 mr-2" />
             <span>Post Product</span>
           </Button>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-12 md:py-16">
+            <p className="text-gray-500 text-lg">Loading...</p>
+          </div>
+        )}
+
         {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
+        {!isLoading && filteredProducts.length === 0 ? (
           <div className="text-center py-12 md:py-16">
             <p className="text-gray-500 text-lg">No Product available yet</p>
           </div>
@@ -225,11 +258,12 @@ export default function MerchantDashboard() {
                   {/* Product Image */}
                   <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                     <Image
-                      src={product.image || "/placeholder.svg"}
+                      src={product.imageUrls[0] || "/placeholder.svg"}
                       alt={product.name}
                       width={96}
                       height={96}
                       className="w-full h-full object-cover"
+                      priority={false}
                     />
                   </div>
 

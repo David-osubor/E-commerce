@@ -1,14 +1,27 @@
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+"use server";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "./firebase-config";
-import { redirect } from "next/dist/server/api-utils";
+import { v2 as cloudinary } from "cloudinary";
 
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 //Adding new merchant
-
 
 type MerchantDataType = {
   email: string;
   primaryPhone: string;
-  secondaryPhone: string;
+  whatsappNo: string;
   brandName: string;
   address: string;
   city: string;
@@ -22,7 +35,7 @@ function validateMerchantData(data: MerchantDataType) {
   const requiredFields = [
     "email",
     "primaryPhone",
-    "secondaryPhone",
+    "whatsappNo",
     "brandName",
     "address",
     "city",
@@ -51,7 +64,7 @@ export async function addNewMerchant(
 ) {
   try {
     validateMerchantData(newMerchant);
-    
+
     const merchantQuery = query(
       collection(db, "merchant"),
       where("userId", "==", userId)
@@ -85,29 +98,91 @@ export async function getMerchantByUserId(userId: string) {
     const querySnapshot = await getDocs(merchantQuery);
 
     if (querySnapshot.empty) {
-      throw new Error("No merchant found for the provided user ID.");
+      return null;
     }
 
     const merchantDoc = querySnapshot.docs[0];
-
+    return { id: merchantDoc.id, data: merchantDoc.data() };
   } catch (error) {
-    console.error("Error fetching merchant:", error);
+    console.error("Error getting merchant:", error);
     throw error;
   }
 }
 
+// Function to upload image to Cloudinary
+export async function uploadImage(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = new Uint8Array(arrayBuffer);
+
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream({ resource_type: "auto" }, (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result?.secure_url as string);
+        }
+      })
+      .end(buffer);
+  });
+}
+
+// Function to delete image from Cloudinary
+export async function deleteImage(publicId: string): Promise<void> {
+  await cloudinary.uploader.destroy(publicId);
+}
+
 // Example: Adding a new product to a 'products' collection
-export async function addNewProduct(name: string, price: number, description: string) {
+export async function addNewProduct(
+  name: string,
+  price: string,
+  description: string,
+  specification: string,
+  condition: string,
+  category: string,
+  negotiable: string,
+  imageFiles: File[],
+  merchantId: string,
+  brandName: string,
+  merchantNo: string
+) {
   try {
+    const imageUrls: string[] = [];
+    for (const file of imageFiles) {
+      const url = await uploadImage(file);
+      imageUrls.push(url);
+    }
     const docRef = await addDoc(collection(db, "products"), {
       name: name,
       price: price,
       description: description,
-      addedDate: new Date()
+      specifications: specification,
+      condition: condition,
+      category: category,
+      negotiable: negotiable,
+      imageUrls: imageUrls,
+      addedDate: new Date().toISOString(),
+      merchantId: merchantId,
+      brandName: brandName,
+      merchantNo: merchantNo,
     });
-    console.log("Document written with ID: ", docRef.id);
+    const docData = await getDoc(docRef);
+    return { productId: docRef.id, data: docData.data() };
   } catch (e) {
     console.error("Error adding document: ", e);
+  }
+}
+
+export async function getProductById(productId: string) {
+  try {
+    const docRef = doc(db, "products", productId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+  } catch (error) {
+    console.error("Error getting document:", error);
   }
 }
 
@@ -115,9 +190,25 @@ export async function addNewProduct(name: string, price: number, description: st
 export async function getProducts() {
   try {
     const querySnapshot = await getDocs(collection(db, "products"));
+    const products: any[] = [];
     querySnapshot.forEach((doc) => {
-      console.log(`${doc.id} => ${JSON.stringify(doc.data())}`);
+      products.push({ id: doc.id, ...doc.data() });
     });
+    return products;
+  } catch (e) {
+    console.error("Error getting documents: ", e);
+  }
+}
+
+export async function getMerchantProducts(merchantId: string) {
+  try {
+    const q = query(collection(db, "products"), where("merchantId", "==", merchantId))  
+    const querySnapshot = await getDocs(q);
+    const products: any[] = [];
+    querySnapshot.forEach((doc) => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
+    return products;      
   } catch (e) {
     console.error("Error getting documents: ", e);
   }

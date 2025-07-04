@@ -1,9 +1,8 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useRef } from "react";
-import { Upload } from "lucide-react";
+import { Upload, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,12 +20,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Image from "next/image";
 
 interface AddProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => Promise<void> | void;
 }
+
+const categories = [
+  "Electronics",
+  "Fashion",
+  "Home & Garden",
+  "Vehicles",
+  "Sports",
+  "Toys",
+  "Beauty",
+  "Health",
+  "Other",
+];
 
 export default function AddProductDialog({
   open,
@@ -43,6 +55,7 @@ export default function AddProductDialog({
     specification: "",
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (field: string, value: string) => {
@@ -54,8 +67,12 @@ export default function AddProductDialog({
       const fileArray = Array.from(files).filter(
         (file) => file.type === "image/png" || file.type === "image/jpeg"
       );
-      setSelectedFiles((prev) => [...prev, ...fileArray]);
+      setSelectedFiles((prev) => [...prev, ...fileArray].slice(0, 5)); // Limit to 5 files
     }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -67,156 +84,192 @@ export default function AddProductDialog({
     handleFileSelect(e.dataTransfer.files);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ ...formData, images: selectedFiles });
+    setIsSubmitting(true);
 
-    // Reset form
-    setFormData({
-      name: "",
-      description: "",
-      category: "",
-      price: "",
-      negotiable: "",
-      condition: "",
-      specification: "",
-    });
-    setSelectedFiles([]);
+    try {
+      await onSubmit({
+        ...formData,
+        images: selectedFiles,
+      });
+
+      // Reset form on success
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        price: "",
+        negotiable: "",
+        condition: "",
+        specification: "",
+      });
+      setSelectedFiles([]);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="sr-only">Add New Product</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Add New Product
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           {/* File Upload Area */}
-          <div
-            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                <Upload className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <p className="text-lg font-medium text-gray-900 mb-2">
-                  Select your file or drag and drop
-                </p>
-                <p className="text-sm text-gray-500 mb-4">png, jpg accepted</p>
-                <Button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-2 rounded-lg"
-                >
-                  browse
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/png,image/jpeg"
-                  onChange={(e) => handleFileSelect(e.target.files)}
-                  className="hidden"
-                />
-              </div>
-            </div>
+          <div>
+            <Label className="text-sm font-medium text-gray-700 mb-2 block">
+              Product Images (Max 5)
+            </Label>
 
-            {selectedFiles.length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-600">
-                  {selectedFiles.length} file(s) selected
-                </p>
+            {selectedFiles.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-4">
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index}`}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center">
+                    <Upload className="w-8 h-8 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-medium text-gray-900 mb-2">
+                      Drag & drop images here
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">
+                      or click to browse (PNG, JPG)
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="px-8 py-2 rounded-lg"
+                    >
+                      Select Files
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/png,image/jpeg"
+              onChange={(e) => handleFileSelect(e.target.files)}
+              className="hidden"
+            />
           </div>
 
           {/* Product Name */}
           <div>
-            <Label
-              htmlFor="productName"
-              className="text-sm font-medium text-gray-700 mb-2 block"
-            >
-              Product Name
+            <Label htmlFor="productName" className="block mb-2">
+              Product Name *
             </Label>
             <Input
               id="productName"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className="w-full"
+              placeholder="Enter product name"
               required
             />
           </div>
 
           {/* Description */}
           <div>
-            <Label
-              htmlFor="description"
-              className="text-sm font-medium text-gray-700 mb-2 block"
-            >
-              Description
+            <Label htmlFor="description" className="block mb-2">
+              Description *
             </Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
-              className="w-full min-h-[100px]"
+              placeholder="Describe your product in detail"
+              className="min-h-[100px]"
               required
             />
           </div>
 
           {/* Category */}
           <div>
-            <Label
-              htmlFor="category"
-              className="text-sm font-medium text-gray-700 mb-2 block"
-            >
-              Category
+            <Label htmlFor="category" className="block mb-2">
+              Category *
             </Label>
-            <Input
-              id="category"
+            <Select
               value={formData.category}
-              onChange={(e) => handleInputChange("category", e.target.value)}
-              className="w-full"
+              onValueChange={(value) => handleInputChange("category", value)}
               required
-            />
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Price and Negotiable */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label
-                htmlFor="price"
-                className="text-sm font-medium text-gray-700 mb-2 block"
-              >
-                Price
+              <Label htmlFor="price" className="block mb-2">
+                Price *
               </Label>
               <Input
                 id="price"
                 type="number"
                 value={formData.price}
                 onChange={(e) => handleInputChange("price", e.target.value)}
-                className="w-full"
+                placeholder="Enter price"
                 required
               />
             </div>
             <div>
-              <Label
-                htmlFor="negotiable"
-                className="text-sm font-medium text-gray-700 mb-2 block"
-              >
-                Is price Negotiable?
+              <Label htmlFor="negotiable" className="block mb-2">
+                Is price negotiable? *
               </Label>
               <Select
                 value={formData.negotiable}
                 onValueChange={(value) =>
                   handleInputChange("negotiable", value)
                 }
+                required
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger>
                   <SelectValue placeholder="Select option" />
                 </SelectTrigger>
                 <SelectContent>
@@ -229,17 +282,15 @@ export default function AddProductDialog({
 
           {/* Condition */}
           <div>
-            <Label
-              htmlFor="condition"
-              className="text-sm font-medium text-gray-700 mb-2 block"
-            >
-              Condition
+            <Label htmlFor="condition" className="block mb-2">
+              Condition *
             </Label>
             <Select
               value={formData.condition}
               onValueChange={(value) => handleInputChange("condition", value)}
+              required
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger>
                 <SelectValue placeholder="Select condition" />
               </SelectTrigger>
               <SelectContent>
@@ -252,11 +303,8 @@ export default function AddProductDialog({
 
           {/* Specification */}
           <div>
-            <Label
-              htmlFor="specification"
-              className="text-sm font-medium text-gray-700 mb-2 block"
-            >
-              Specification
+            <Label htmlFor="specification" className="block mb-2">
+              Specifications
             </Label>
             <Textarea
               id="specification"
@@ -264,16 +312,25 @@ export default function AddProductDialog({
               onChange={(e) =>
                 handleInputChange("specification", e.target.value)
               }
-              className="w-full min-h-[100px]"
+              placeholder="Add product specifications (optional)"
+              className="min-h-[100px]"
             />
           </div>
 
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 text-lg font-medium rounded-lg"
+            className="w-full py-3 text-lg font-medium"
+            disabled={isSubmitting}
           >
-            Submit
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Product"
+            )}
           </Button>
         </form>
       </DialogContent>

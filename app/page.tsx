@@ -1,14 +1,16 @@
 import CategoriesSection from "@/components/CategoriesSection";
 import HeroSection from "@/components/HeroSection";
 import ProductGrid from "@/components/ProductGrid";
+import { getProducts } from "@/lib/firebase/crud";
 
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getProducts();
   return (
     <div className="min-h-screen bg-white">
       <HeroSection />
       <CategoriesSection />
-      <ProductGrid />
+      <ProductGrid products={products || []} />
     </div>
   )
 }

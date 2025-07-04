@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,12 +22,12 @@ const businessCategories = [
 ];
 
 export default function MerchantRegistrationForm() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     email: user?.email || "",
     primaryPhone: "09025777310",
-    secondaryPhone: "09032929196",
+    whatsappNo: "09032929196",
     brandName: "Excel Store",
     address: "OOU ibogun",
     city: "Ifo",
@@ -35,10 +35,19 @@ export default function MerchantRegistrationForm() {
     postalCode: "112104",
     country: "Nigeria",
   });
-  const router = useRouter()
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user?.uid) {
+      router.push('/');
+      return;
+    } else if(user?.uid){
+      router.push('/merchant/dashboard');      
+    }
+  },[])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -75,15 +84,15 @@ export default function MerchantRegistrationForm() {
         categories: selectedCategories,
       });
       setSuccess(true);
-      router.push("/merchant/dashboard")
+      router.push("/merchant/dashboard");
     } catch (err) {
       if (
-        err instanceof Error && err.message ===
-        "User already has a merchant store."
+        err instanceof Error &&
+        err.message === "User already has a merchant store."
       ) {
         router.push("/merchant/dashboard");
       }
-        console.error("Failed to create merchant:", err);
+      console.error("Failed to create merchant:", err);
       setError(
         err instanceof Error
           ? err.message
@@ -174,17 +183,17 @@ export default function MerchantRegistrationForm() {
                   </div>
                   <div>
                     <Label
-                      htmlFor="secondaryPhone"
+                      htmlFor="whatsappNo"
                       className="text-sm font-medium text-gray-700"
                     >
                       Secondary Phone
                     </Label>
                     <Input
-                      id="secondaryPhone"
+                      id="whatsappNo"
                       type="tel"
-                      value={formData.secondaryPhone}
+                      value={formData.whatsappNo}
                       onChange={(e) =>
-                        handleInputChange("secondaryPhone", e.target.value)
+                        handleInputChange("whatsappNo", e.target.value)
                       }
                       className="mt-1"
                     />

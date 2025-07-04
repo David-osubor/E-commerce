@@ -1,6 +1,7 @@
 import MerchantDashboard from "@/components/merchant/MerchantDashboard";
 
-export default function MerchantDashboardPage() {
+
+export default async function MerchantDashboardPage() {
 
   return <MerchantDashboard />;
 }

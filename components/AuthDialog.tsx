@@ -56,7 +56,12 @@ export default function AuthDialog({ authType }: { authType: "login" | "signup" 
 
       <DialogContent>
         <DialogTitle className="text-lg font-semibold text-gray-800">
-          {mode === "login" ? (
+          {showVerification && user && !user.emailVerified ? (
+            <>
+              <p className="text-sm pb-2">Email Sent!</p>
+              <p>Verify You Email Address</p>
+            </>
+          ) : mode === "login" ? (
             <>
               <p className="text-sm pb-2">Welcome Back!</p>
               <p>Fill in your details to proceed</p>

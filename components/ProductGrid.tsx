@@ -2,50 +2,11 @@ import Image from "next/image"
 import { CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { DocumentData } from "firebase/firestore"
 
-const products = [
-  {
-    id: 1,
-    name: "Apple iPhone 7 64 GB Gray",
-    price: "₦20,000",
-    image: "/prod1.png",
-    verified: true,
-    description:
-      "Face ID works perfect, crack on the screen and back, battery health is 78%. Works perfectly and it's...",
-  },
-  {
-    id: 2,
-    name: "Apple iPhone 7 64 GB Gray",
-    price: "₦20,000",
-    image: "/prod2.png",
-    verified: true,
-    description:
-      "Face ID works perfect, crack on the screen and back, battery health is 78%. Works perfectly and it's...",
-  },
-  {
-    id: 3,
-    name: "Apple iPhone 7 64 GB Gray",
-    price: "₦20,000",
-    image: "/prod3.png",
-    verified: true,
-    description:
-      "Face ID works perfect, crack on the screen and back, battery health is 78%. Works perfectly and it's...",
-  },
-  {
-    id: 4,
-    name: "Apple iPhone 7 64 GB Gray",
-    price: "₦20,000",
-    image: "/prod4.png",
-    verified: true,
-    description:
-      "Face ID works perfect, crack on the screen and back, battery health is 78%. Works perfectly and it's...",
-  },
-]
 
-// Duplicate products to create multiple rows as shown in the image
-const allProducts = [...products, ...products, ...products]
-
-export default function ProductGrid() {
+export default function ProductGrid({ products }: {products: DocumentData[]}) {
+  const allProducts = [...products, ...products, ...products];
   return (
     <section className="bg-gray-50 px-4 py-8">
       <div className="container mx-auto">
@@ -58,7 +19,7 @@ export default function ProductGrid() {
               {/* Product Image */}
               <div className="aspect-square relative">
                 <Image
-                  src={product.image || "/placeholder.svg"}
+                  src={product.imageUrls[0] || "/placeholder.svg"}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -69,14 +30,12 @@ export default function ProductGrid() {
               <div className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-lg font-bold text-gray-900">
-                    {product.price}
+                    ₦ {product.price}
                   </span>
-                  {product.verified && (
-                    <div className="flex items-center space-x-1">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-xs text-green-600">Verified</span>
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-1">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="text-xs text-green-600">Verified</span>
+                  </div>
                 </div>
 
                 <h3 className="font-semibold text-gray-900 mb-2">
