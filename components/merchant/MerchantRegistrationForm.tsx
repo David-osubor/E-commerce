@@ -26,13 +26,13 @@ export default function MerchantRegistrationForm() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     email: user?.email || "",
-    primaryPhone: "09025777310",
-    whatsappNo: "09032929196",
-    brandName: "Excel Store",
-    address: "OOU ibogun",
-    city: "Ifo",
-    state: "Ogun",
-    postalCode: "112104",
+    primaryPhone: "",
+    whatsappNo: "",
+    brandName: "",
+    address: "OOU Ibogun",
+    city: "",
+    state: "",
+    postalCode: "",
     country: "Nigeria",
   });
   const router = useRouter();
