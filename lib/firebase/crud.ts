@@ -2,10 +2,12 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "./firebase-config";
@@ -170,6 +172,78 @@ export async function addNewProduct(
     return { productId: docRef.id, data: docData.data() };
   } catch (e) {
     console.error("Error adding document: ", e);
+  }
+}
+
+export async function updateProduct(
+  productId: string,
+  updatedData: {
+    name: string;
+    price: string;
+    description: string;
+    specification: string;
+    condition: string;
+    category: string;
+    negotiable: string;
+    images: (File | string)[];
+    merchantId: string;
+    merchantName: string;
+    merchantWhatsapp: string;
+  },
+  existingImages: string[] = []
+) {
+  try {
+    // Handle image updates
+    const newImageUrls: string[] = [];
+    const imagesToKeep: string[] = [...existingImages];
+
+    // Separate new files from existing URLs
+    for (const img of updatedData.images) {
+      if (typeof img === "string") {
+        // This is an existing image URL that should be kept
+        imagesToKeep.push(img);
+      } else {
+        // This is a new file that needs uploading
+        const url = await uploadImage(img);
+        newImageUrls.push(url);
+      }
+    }
+
+    // Combine kept and new images
+    const allImageUrls = [...imagesToKeep, ...newImageUrls];
+
+    // Update the product document
+    const productRef = doc(db, "products", productId);
+    await updateDoc(productRef, {
+      name: updatedData.name,
+      price: updatedData.price,
+      description: updatedData.description,
+      specifications: updatedData.specification,
+      condition: updatedData.condition,
+      category: updatedData.category,
+      negotiable: updatedData.negotiable,
+      imageUrls: allImageUrls,
+      lastUpdated: new Date().toISOString(), // Add update timestamp
+      merchantId: updatedData.merchantId,
+      brandName: updatedData.merchantName,
+      merchantNo: updatedData.merchantWhatsapp,
+    });
+
+    // Get the updated document
+    const updatedDoc = await getDoc(productRef);
+    return { id: productId, ...updatedDoc.data() };
+  } catch (e) {
+    console.error("Error updating document: ", e);
+    throw e; // Re-throw to handle in the calling function
+  }
+}
+
+export async function deleteProduct(productId: string) {
+  try {
+    const productRef = doc(db, "products", productId);
+    await deleteDoc(productRef);
+  } catch(err){
+    console.log(err)
   }
 }
 

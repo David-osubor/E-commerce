@@ -8,8 +8,7 @@ export default async function HomePage() {
   const products = await getProducts();
   return (
     <div className="min-h-screen bg-white">
-      <HeroSection />
-      <CategoriesSection />
+      <HeroSection />      
       <ProductGrid products={products || []} />
     </div>
   )

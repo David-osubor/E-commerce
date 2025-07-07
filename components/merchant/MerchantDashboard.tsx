@@ -7,7 +7,7 @@ import Image from "next/image";
 import AddProductDialog from "./AddProductDialog";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { addNewProduct, getMerchantByUserId, getMerchantProducts } from "@/lib/firebase/crud";
+import { addNewProduct, deleteProduct, getMerchantByUserId, getMerchantProducts, updateProduct } from "@/lib/firebase/crud";
 import { DocumentData } from "firebase/firestore";
 
 
@@ -22,6 +22,8 @@ export default function MerchantDashboard() {
   const [products, setProducts] = useState<DocumentData[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const [productToEdit, setProductToEdit] = useState<DocumentData | null>(null);
   
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,7 +40,7 @@ export default function MerchantDashboard() {
       try {
         const response = await getMerchantByUserId(user.uid);
         if (response) {
-          setMerchant({...response.data,id: response.id});
+          setMerchant({...response.data, id: response.id});
           const merchantProducts = await getMerchantProducts(response.id);
           setProducts(merchantProducts || []);
         } else {
@@ -61,46 +63,71 @@ export default function MerchantDashboard() {
       ? products
       : products.filter((product) => product.category === selectedCategory);
 
-  const handleDeleteProduct = (productId: number) => {
+  const handleDeleteProduct = async (productId: string) => {
     setProducts(products.filter((product) => product.id !== productId));
     // TODO: Add actual delete from Firestore
+    await deleteProduct(productId);
   };
 
-  const handleEditProduct = (productId: number) => {
-    // TODO: Implement edit functionality
-    console.log("Edit product:", productId);
-  };
-
-  const handleAddProduct = async (productData: any) => {
+  const handleSaveProduct = async (productData: any) => {
     if (!merchant) {
       console.error("No merchant data available");
       return;
     }
-    console.log(merchant)
 
     try {
-      // Add to Firestore
-      const response = await addNewProduct(
-        productData.name,
-        productData.price,
-        productData.description,
-        productData.specification,
-        productData.condition,
-        productData.category,
-        productData.negotiable,
-        productData.images,
-        merchant.id,
-        merchant.brandName,
-        merchant.whatsappNo
-      );
-      if(response){
-        const newProduct = { ...response.data, id: response.productId };
-        setProducts([newProduct, ...products]);
-        setIsAddProductOpen(false);
+      console.log(productData.id)
+      if (productData.id) {
+        // Editing existing product
+        const updatedProduct = await updateProduct(
+          productData.id,
+          {
+            name: productData.name,
+            price: productData.price,
+            description: productData.description,
+            specification: productData.specification,
+            condition: productData.condition,
+            category: productData.category,
+            negotiable: productData.negotiable,
+            images: productData.images,
+            // Keep existing merchant info
+            merchantId: merchant.id,
+            merchantName: merchant.brandName,
+            merchantWhatsapp: merchant.whatsappNo,
+          },
+          productData.existingImages // Pass existing images to handle deletions
+        );
+
+        if (updatedProduct) {
+          setProducts(
+            products.map((p) => (p.id === productData.id ? updatedProduct : p))
+          );
+          setIsAddProductOpen(false);
+        }
+      } else {
+        // Adding new product
+        const response = await addNewProduct(
+          productData.name,
+          productData.price,
+          productData.description,
+          productData.specification,
+          productData.condition,
+          productData.category,
+          productData.negotiable,
+          productData.images,
+          merchant.id,
+          merchant.brandName,
+          merchant.whatsappNo
+        );
+
+        if (response) {
+          const newProduct = { ...response.data, id: response.productId };
+          setProducts([newProduct, ...products]);
+          setIsAddProductOpen(false);
+        }
       }
-      
     } catch (error) {
-      console.error("Failed to add product:", error);
+      console.error("Failed to save product:", error);
       // Handle error (e.g., show toast notification)
     }
   };
@@ -226,7 +253,10 @@ export default function MerchantDashboard() {
           </div>
 
           <Button
-            onClick={() => setIsAddProductOpen(true)}
+            onClick={() =>{ 
+              setProductToEdit(null);
+              setIsAddProductOpen(true)
+            }}
             className="md:w-auto w-full bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-3 rounded-lg"
             disabled={isLoading}
           >
@@ -290,7 +320,10 @@ export default function MerchantDashboard() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEditProduct(product.id)}
+                        onClick={() => {
+                          setProductToEdit(product);
+                          setIsAddProductOpen(true);
+                        }}
                         className="text-blue-500 hover:text-blue-600 hover:bg-blue-50 p-0"
                       >
                         <Edit className="w-3 h-3 md:w-4 md:h-4 mr-1" />
@@ -307,9 +340,10 @@ export default function MerchantDashboard() {
 
       {/* Add Product Dialog */}
       <AddProductDialog
+        product={productToEdit as DocumentData}
         open={isAddProductOpen}
         onOpenChange={setIsAddProductOpen}
-        onSubmit={handleAddProduct}
+        onSubmit={handleSaveProduct}
       />
     </div>
   );

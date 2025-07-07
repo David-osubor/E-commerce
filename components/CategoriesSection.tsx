@@ -21,18 +21,18 @@ const categories = [
   { name: "Clothes", icon: Shirt, color: "bg-white border-2 border-gray-200", textColor: "text-gray-700" },
 ]
 
-export default function CategoriesSection() {
-  const scrollRef = useRef<HTMLDivElement>(null)
+export default function CategoriesSection({ selectedCategory, onCategoryChange }: { selectedCategory: string, onCategoryChange : (category: string) => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const scrollAmount = 200
+      const scrollAmount = 200;
       scrollRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
-      })
+      });
     }
-  }
+  };
 
   return (
     <section className="bg-gray-50 px-4 py-8">
@@ -44,16 +44,28 @@ export default function CategoriesSection() {
             <span className="text-blue-600 font-medium">Categories</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="p-2" onClick={() => scroll("left")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2"
+              onClick={() => scroll("left")}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2" onClick={() => scroll("right")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2"
+              onClick={() => scroll("right")}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Browse By Category</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Browse By Category
+        </h2>
 
         {/* Categories Carousel */}
         <div
@@ -61,19 +73,22 @@ export default function CategoriesSection() {
           className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory"
         >
           {categories.map((category, index) => {
-            const IconComponent = category.icon
+            const IconComponent = category.icon;
             return (
               <div
                 key={index}
-                className={`${category.color} ${category.textColor} min-w-[120px] snap-start p-6 rounded-lg flex flex-col items-center justify-center space-y-2 cursor-pointer hover:shadow-md transition-shadow`}
+                className={`${selectedCategory === category.name ? "bg-blue-500 text-white" : ""} min-w-[120px] md:min-w-[200px] snap-start p-6 rounded-lg flex flex-col items-center justify-center space-y-2 cursor-pointer hover:shadow-md transition-shadow border  border-gray-200 hover:bg-blue-500 hover:text-white`}
+                onClick={() => onCategoryChange(category.name)}
               >
                 <IconComponent className="h-8 w-8" />
-                <span className="text-sm font-medium text-center">{category.name}</span>
+                <span className="text-sm font-medium text-center">
+                  {category.name}
+                </span>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </section>
-  )
+  );
 }

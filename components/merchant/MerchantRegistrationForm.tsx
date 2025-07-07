@@ -186,7 +186,7 @@ export default function MerchantRegistrationForm() {
                       htmlFor="whatsappNo"
                       className="text-sm font-medium text-gray-700"
                     >
-                      Secondary Phone
+                      WhatsApp Phone
                     </Label>
                     <Input
                       id="whatsappNo"

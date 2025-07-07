@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Upload, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,29 +21,30 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { DocumentData } from "firebase/firestore";
 
-interface AddProductDialogProps {
-  product?: DocumentData;
+interface EditProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => Promise<void> | void;
 }
 
 const categories = [
-  "Computers",
-  "Food",
-  "Phones",
-  "Books",
-  "Clothes",
+  "Electronics",
+  "Fashion",
+  "Home & Garden",
+  "Vehicles",
+  "Sports",
+  "Toys",
+  "Beauty",
+  "Health",
+  "Other",
 ];
 
-export default function AddProductDialog({
-  product,
+export default function EditProductDialog({
   open,
   onOpenChange,
   onSubmit,
-}: AddProductDialogProps) {
+}: EditProductDialogProps) {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -51,41 +52,11 @@ export default function AddProductDialog({
     price: "",
     negotiable: "",
     condition: "",
-    images: [] as (File | string)[],
     specification: "",
   });
-  const [selectedFiles, setSelectedFiles] = useState<(File | string)[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || "",
-        description: product.description || "",
-        category: product.category || "",
-        price: product.price || "",
-        negotiable: product.negotiable || "",
-        condition: product.condition || "",
-        images: product.images || [],
-        specification: product.specifications || "",
-      });
-      setSelectedFiles(product.images || []);
-    } else {
-      // Reset form when opening for new product
-      setFormData({
-        name: "",
-        description: "",
-        category: "",
-        price: "",
-        negotiable: "",
-        condition: "",
-        images: [],
-        specification: "",
-      });
-      setSelectedFiles([]);
-    }
-  }, [product, open]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -120,25 +91,20 @@ export default function AddProductDialog({
     try {
       await onSubmit({
         ...formData,
-        id: product?.id,
         images: selectedFiles,
-        existingImages: product?.imageUrls || [], // Pass existing images for edit case
       });
 
-      // Only reset form if not editing
-      if (!product) {
-        setFormData({
-          name: "",
-          description: "",
-          category: "",
-          price: "",
-          negotiable: "",
-          condition: "",
-          images: [],
-          specification: "",
-        });
-        setSelectedFiles([]);
-      }
+      // Reset form on success
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        price: "",
+        negotiable: "",
+        condition: "",
+        specification: "",
+      });
+      setSelectedFiles([]);
       onOpenChange(false);
     } catch (error) {
       console.error("Submission error:", error);
@@ -152,7 +118,7 @@ export default function AddProductDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            {product ? "Edit Product" : "Add New Product"}
+            Add New Product
           </DialogTitle>
         </DialogHeader>
 
@@ -168,23 +134,13 @@ export default function AddProductDialog({
                 {selectedFiles.map((file, index) => (
                   <div key={index} className="relative group">
                     <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
-                      {typeof file === "string" ? (
-                        <Image
-                          src={file}
-                          alt={`Preview ${index}`}
-                          width={100}
-                          height={100}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Image
-                          src={URL.createObjectURL(file)}
-                          alt={`Preview ${index}`}
-                          width={100}
-                          height={100}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index}`}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <button
                       type="button"
@@ -370,10 +326,8 @@ export default function AddProductDialog({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {product ? "Updating..." : "Submitting..."}
+                Submitting...
               </>
-            ) : product ? (
-              "Update Product"
             ) : (
               "Submit Product"
             )}
