@@ -13,7 +13,7 @@ import { useRef } from "react"
 import { Button } from "@/components/ui/button"
 
 const categories = [
-  { name: "Place Ads", icon: Plus, color: "bg-orange-500", textColor: "text-white" },
+  { name: "All", icon: Plus, color: "bg-orange-500", textColor: "text-white" },
   { name: "Computers", icon: Monitor, color: "bg-white border-2 border-gray-200", textColor: "text-gray-700" },
   { name: "Food", icon: Utensils, color: "bg-white border-2 border-gray-200", textColor: "text-gray-700" },
   { name: "Phones", icon: Smartphone, color: "bg-blue-600", textColor: "text-white" },
@@ -23,6 +23,8 @@ const categories = [
 
 export default function CategoriesSection({ selectedCategory, onCategoryChange }: { selectedCategory: string, onCategoryChange : (category: string) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  console.log(selectedCategory)
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {

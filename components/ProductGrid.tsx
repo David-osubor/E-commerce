@@ -13,15 +13,16 @@ export default function ProductGrid({
 }: {
   products: DocumentData[];
 }) {
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
   };
 
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => product.category === selectedCategory)
-    : products;
+  const filteredProducts =
+    selectedCategory === "All"
+      ? products
+      : products.filter((product) => product.category === selectedCategory);
 
   return (
     <>

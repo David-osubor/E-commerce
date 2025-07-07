@@ -136,7 +136,7 @@ export default function MerchantDashboard() {
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
       {/* Mobile Menu Button */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white border-b">
-        <h1 className="text-xl font-bold text-gray-900">Merchant Dashboard</h1>
+        <h1 className="text-lg font-bold text-gray-900">Merchant Dashboard</h1>
         <Button
           variant="ghost"
           size="icon"
@@ -189,9 +189,9 @@ export default function MerchantDashboard() {
       )}
 
       {/* Sidebar - Desktop */}
-      <div className="hidden md:flex md:w-64 lg:w-80 bg-white p-6 flex-col">
+      <div className="hidden md:flex md:w-60 lg:w-64 bg-white p-6 flex-col">
         <div className="mb-8">
-          <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6 lg:mb-8">
+          <h1 className="text-lg lg:text-xl text-center font-bold text-gray-900 mb-6 lg:mb-8">
             Merchant
             <br />
             Dashboard
@@ -225,44 +225,40 @@ export default function MerchantDashboard() {
       {/* Main Content */}
       <div className="flex-1 p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8 gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col mb-6 md:mb-8 gap-4">
+          <div className="flex items-center justify-between">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">
               Product Categories
             </h2>
-
-            {/* Category Filters */}
-            <div className="flex space-x-2 md:space-x-4 overflow-x-auto pb-2 md:pb-0">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={
-                    selectedCategory === category ? "default" : "outline"
-                  }
-                  onClick={() => setSelectedCategory(category)}
-                  className={`whitespace-nowrap px-4 md:px-6 py-2 rounded-full ${
-                    selectedCategory === category
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
+            <Button
+              onClick={() => {
+                setProductToEdit(null);
+                setIsAddProductOpen(true);
+              }}
+              className="md:w-auto w-full bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-3 rounded-lg"
+              disabled={isLoading}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              <span>Post Product</span>
+            </Button>
           </div>
-
-          <Button
-            onClick={() =>{ 
-              setProductToEdit(null);
-              setIsAddProductOpen(true)
-            }}
-            className="md:w-auto w-full bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-3 rounded-lg"
-            disabled={isLoading}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            <span>Post Product</span>
-          </Button>
+          {/* Category Filters */}
+          <div className="flex space-x-2 md:space-x-4 overflow-x-auto pb-2 md:pb-0">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category)}
+                className={`whitespace-nowrap px-4 md:px-6 py-2 rounded-full ${
+                  selectedCategory === category
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Loading State */}
@@ -278,7 +274,7 @@ export default function MerchantDashboard() {
             <p className="text-gray-500 text-lg">No Product available yet</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
