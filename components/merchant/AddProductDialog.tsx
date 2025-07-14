@@ -35,6 +35,7 @@ const categories = [
   "Food",
   "Phones",
   "Books",
+  "Beauty",
   "Clothes",
 ];
 

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
-import { addNewMerchant } from "@/lib/firebase/crud";
+import { addNewMerchant, getMerchantByUserId } from "@/lib/firebase/crud";
 import { useRouter } from "next/navigation";
 
 const businessCategories = [
@@ -36,18 +36,26 @@ export default function MerchantRegistrationForm() {
     country: "Nigeria",
   });
   const router = useRouter();
+  const [loadingMerchant, setLoadingMerchant] = useState(true)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user?.uid) {
+  useEffect(() => {  
+    if (!loading && !user) {
       router.push('/');
       return;
-    } else if(user?.uid){
-      router.push('/merchant/dashboard');      
+    }  
+    
+    const getMerchantExist = async() => {
+      const response = await getMerchantByUserId(user?.uid!);
+      if(response?.id){
+        router.push("/merchant/dashboard");        
+      }      
+    setLoadingMerchant(false);
     }
-  },[])
+    getMerchantExist()
+  },[user])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -102,6 +110,15 @@ export default function MerchantRegistrationForm() {
       setIsLoading(false);
     }
   };
+
+  if (loading || loadingMerchant) {
+    return (
+      <div className="flex items-center flex-col gap-6 justify-center h-84">
+        <Loader2 className="animate-spin" />
+        <p>Loading Please wait...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -183,10 +200,10 @@ export default function MerchantRegistrationForm() {
                   </div>
                   <div>
                     <Label
-                      htmlFor="whatsappNo"
+                      htmlFor="whatsappNo(+234)"
                       className="text-sm font-medium text-gray-700"
                     >
-                      WhatsApp Phone
+                      WhatsApp Phone (+234)
                     </Label>
                     <Input
                       id="whatsappNo"

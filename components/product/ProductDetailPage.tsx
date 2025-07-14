@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DocumentData } from "firebase/firestore";
+
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { getProducts } from "@/lib/firebase/crud";
+
+dayjs.extend(relativeTime);
+
 
 
 
@@ -41,8 +48,23 @@ interface ProductDetailPageProps {
 export default function ProductDetailPage({
   product,
 }: ProductDetailPageProps) {
-  console.log(product.imageUrls)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState<DocumentData[]>([])
+
+   useEffect(() => {
+     const fetchProducts = async () => {
+       const data = await getProducts();
+       if(data !== undefined ){
+        const rProducts = data.filter((p) => p.category !== product.category);
+        if(rProducts){
+          setRelatedProducts(rProducts);
+        }
+       
+       }
+       
+     };
+     fetchProducts();
+   }, []);
 
   const handleWhatsAppClick = () => {
     // Create WhatsApp message with product details
@@ -60,7 +82,7 @@ export default function ProductDetailPage({
 
     // Open WhatsApp with the merchant's number and pre-filled message
     window.open(
-      `https://wa.me/${product.merchant.phone}?text=${encodedMessage}`,
+      `https://wa.me/${product.merchantNo}?text=${encodedMessage}`,
       "_blank"
     );
   };
@@ -138,7 +160,7 @@ export default function ProductDetailPage({
                     <h3 className="font-medium text-gray-900">
                       {product.brandName}
                     </h3>
-                    <div className="flex items-center space-x-2">
+                    {/* <div className="flex items-center space-x-2">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
                           <svg
@@ -156,9 +178,9 @@ export default function ProductDetailPage({
                         ))}
                       </div>
                       <span className="text-sm text-gray-600">(4 reviews)</span>
-                    </div>
+                    </div> */}
                     <p className="text-sm text-gray-600 mt-1">
-                      OOU Ibogun • 2 days ago
+                      OOU Ibogun • {dayjs(product.lastUpdated).fromNow()}
                     </p>
                   </div>
                 </div>
@@ -229,7 +251,7 @@ export default function ProductDetailPage({
               Related Products
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedProducts.map((product) => (
+              {relatedProducts && relatedProducts.map((product) => (
                 <Link
                   key={product.id}
                   href={`/product/${product.id}`}

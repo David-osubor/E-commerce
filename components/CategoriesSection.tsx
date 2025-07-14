@@ -8,6 +8,7 @@ import {
   Book,
   Shirt,
   Plus,
+  Brush,
 } from "lucide-react"
 import { useRef } from "react"
 import { Button } from "@/components/ui/button"
@@ -18,13 +19,13 @@ const categories = [
   { name: "Food", icon: Utensils, color: "bg-white border-2 border-gray-200", textColor: "text-gray-700" },
   { name: "Phones", icon: Smartphone, color: "bg-blue-600", textColor: "text-white" },
   { name: "Books", icon: Book, color: "bg-white border-2 border-gray-200", textColor: "text-gray-700" },
+  { name: "Beauty", icon: Brush, color: "bg-white border-2 border-gray-200", textColor: "text-gray-700" },
   { name: "Clothes", icon: Shirt, color: "bg-white border-2 border-gray-200", textColor: "text-gray-700" },
 ]
 
 export default function CategoriesSection({ selectedCategory, onCategoryChange }: { selectedCategory: string, onCategoryChange : (category: string) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  console.log(selectedCategory)
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {

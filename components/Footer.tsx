@@ -22,7 +22,9 @@ export default function Footer() {
                   placeholder="Enter your email"
                   className="bg-transparent border-white text-white placeholder:text-white/70 rounded-r-none"
                 />
-                <Button className="bg-white text-blue-600 hover:bg-white/90 rounded-l-none">→</Button>
+                <Button className="bg-white text-blue-600 hover:bg-white/90 rounded-l-none">
+                  →
+                </Button>
               </div>
             </div>
           </div>
@@ -41,13 +43,16 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">About Us</h3>
             <div className="space-y-3 text-sm">
-              <Link href="#" className="block hover:underline">
+              <Link href="/about-us" className="block hover:underline">
                 About Ibogun Market
               </Link>
               <Link href="#" className="block hover:underline">
                 We are hiring!
               </Link>
-              <Link href="#" className="block hover:underline">
+              <Link
+                href="/terms-and-conditions"
+                className="block hover:underline"
+              >
                 Terms & Conditions
               </Link>
               <Link href="#" className="block hover:underline">
@@ -66,7 +71,10 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Link</h3>
             <div className="space-y-3 text-sm">
-              <Link href="#" className="block hover:underline">
+              <Link
+                href="/terms-and-conditions"
+                className="block hover:underline"
+              >
                 Terms Of Use
               </Link>
               <Link href="#" className="block hover:underline">
@@ -107,5 +115,5 @@ export default function Footer() {
         <ArrowUp className="h-5 w-5" />
       </Button>
     </footer>
-  )
+  );
 }

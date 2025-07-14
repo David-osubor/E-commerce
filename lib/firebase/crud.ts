@@ -4,6 +4,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  DocumentData,
   getDoc,
   getDocs,
   query,
@@ -268,7 +269,7 @@ export async function getProducts() {
     querySnapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
-    return products;
+    return products as DocumentData[];
   } catch (e) {
     console.error("Error getting documents: ", e);
   }

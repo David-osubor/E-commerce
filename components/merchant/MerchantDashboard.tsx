@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { addNewProduct, deleteProduct, getMerchantByUserId, getMerchantProducts, updateProduct } from "@/lib/firebase/crud";
 import { DocumentData } from "firebase/firestore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 
@@ -76,7 +77,6 @@ export default function MerchantDashboard() {
     }
 
     try {
-      console.log(productData.id)
       if (productData.id) {
         // Editing existing product
         const updatedProduct = await updateProduct(
@@ -165,21 +165,22 @@ export default function MerchantDashboard() {
 
           {/* User Profile */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-              </div>
-            </div>
-            <span className="text-lg font-medium text-gray-900">
+            <Avatar className="w-12 h-12">
+              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+              <AvatarFallback>
+                {(merchant?.brandName || "Merchant").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-lg font-medium text-gray-900 capitalize">
               {merchant?.brandName || "Merchant"}
             </span>
           </div>
 
           {/* Logout Button */}
-          <div className="mt-auto">
+          <div className="mt-auto flex justify-center">
             <Button
               onClick={logout}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg"
+              className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg"
             >
               <LogOut className="w-4 h-4 mr-2" />
               LOG OUT
@@ -199,12 +200,13 @@ export default function MerchantDashboard() {
 
           {/* User Profile */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-24 h-24 lg:w-32 lg:h-32 bg-blue-500 rounded-full flex items-center justify-center mb-4">
-              <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-full"></div>
-              </div>
-            </div>
-            <span className="text-lg font-medium text-gray-900">
+            <Avatar className="w-12 h-12">
+              {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+              <AvatarFallback>
+                {(merchant?.brandName || "Merchant").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-lg font-medium text-gray-900 capitalize">
               {merchant?.brandName || "Merchant"}
             </span>
           </div>
@@ -235,7 +237,7 @@ export default function MerchantDashboard() {
                 setProductToEdit(null);
                 setIsAddProductOpen(true);
               }}
-              className="md:w-auto w-full bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-3 rounded-lg"
+              className="md:w-auto bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-3 rounded-lg"
               disabled={isLoading}
             >
               <Plus className="w-4 h-4 mr-2" />
