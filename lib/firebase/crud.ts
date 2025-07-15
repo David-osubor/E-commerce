@@ -265,7 +265,7 @@ export async function getProductById(productId: string) {
 export async function getProducts() {
   try {
     const querySnapshot = await getDocs(collection(db, "products"));
-    const products: any[] = [];
+    const products: DocumentData[] = [];
     querySnapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
@@ -279,7 +279,7 @@ export async function getMerchantProducts(merchantId: string) {
   try {
     const q = query(collection(db, "products"), where("merchantId", "==", merchantId))  
     const querySnapshot = await getDocs(q);
-    const products: any[] = [];
+    const products: DocumentData[] = [];
     querySnapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });

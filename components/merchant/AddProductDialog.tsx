@@ -27,7 +27,21 @@ interface AddProductDialogProps {
   product?: DocumentData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => Promise<void> | void;
+  onSubmit: (data: {
+    id?: string;
+    name: string;
+    price: string;
+    description: string;
+    specification: string;
+    condition: string;
+    category: string;
+    negotiable: string;
+    images: File[];
+    existingImages?: string[];
+    merchantId?: string;
+    merchantName?: string;
+    merchantWhatsapp?: string;
+  }) => Promise<void> | void;
 }
 
 const categories = [
@@ -55,7 +69,7 @@ export default function AddProductDialog({
     images: [] as (File | string)[],
     specification: "",
   });
-  const [selectedFiles, setSelectedFiles] = useState<(File | string)[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<(File)[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

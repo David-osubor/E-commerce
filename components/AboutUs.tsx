@@ -71,7 +71,7 @@ export default function AboutUsPage() {
           <p className="text-gray-700 text-lg leading-relaxed">
             DigiMart is a digital marketplace built with one goal in mind — to
             simplify how people buy, sell, and trade within their local
-            communities. Whether you're a student looking for a fairly used
+            communities. Whether you&apos;re a student looking for a fairly used
             phone, a parent finding home essentials, or a small business owner
             trying to reach nearby customers, DigiMart is here to connect you
             with people who need what you have.
@@ -176,7 +176,7 @@ export default function AboutUsPage() {
               Join the DigiMart Community
             </h2>
             <p className="text-lg mb-8 opacity-90">
-              Whether you're a small business looking to scale or a shopper
+              Whether you&apos;re a small business looking to scale or a shopper
               seeking authentic Nigerian products, DigiMarkets is your
               destination for growth.
             </p>

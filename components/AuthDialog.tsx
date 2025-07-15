@@ -223,7 +223,7 @@ export default function AuthDialog({ authType }: { authType: "login" | "signup" 
           {mode === "login" ? (
             <>
               <p>
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <button
                   onClick={toggleMode}
                   className="text-blue-600 hover:underline"

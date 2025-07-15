@@ -1,13 +1,8 @@
 import ProductDetailPage from "@/components/product/ProductDetailPage";
 import { getProductById } from "@/lib/firebase/crud";
 
-interface ProductPageProps {
-  params: {
-    id: string;
-  };
-}
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: {params: Promise<{ id: string }>}) {
   const paramData = await params
   
   const productData = await getProductById(paramData.id)

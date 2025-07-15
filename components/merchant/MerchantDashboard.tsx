@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { addNewProduct, deleteProduct, getMerchantByUserId, getMerchantProducts, updateProduct } from "@/lib/firebase/crud";
 import { DocumentData } from "firebase/firestore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 
 
@@ -57,7 +57,7 @@ export default function MerchantDashboard() {
     };
 
     fetchMerchantData();
-  }, [user?.uid]); // Only re-run if user.uid changes
+  }, [loading, user?.uid]); // Only re-run if user.uid changes
 
   const filteredProducts =
     selectedCategory === "All"
@@ -70,7 +70,21 @@ export default function MerchantDashboard() {
     await deleteProduct(productId);
   };
 
-  const handleSaveProduct = async (productData: any) => {
+  const handleSaveProduct = async (productData: {
+    id?: string;
+    name: string;
+    price: string;
+    description: string;
+    specification: string;
+    condition: string;
+    category: string;
+    negotiable: string;
+    images: File[];
+    existingImages?: string[];
+    merchantId?: string;
+    merchantName?: string;
+    merchantWhatsapp?: string;
+  }) => {
     if (!merchant) {
       console.error("No merchant data available");
       return;

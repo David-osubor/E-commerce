@@ -48,7 +48,8 @@ export default function MerchantRegistrationForm() {
     }  
     
     const getMerchantExist = async() => {
-      const response = await getMerchantByUserId(user?.uid!);
+      if(!user) return;
+      const response = await getMerchantByUserId(user.uid);
       if(response?.id){
         router.push("/merchant/dashboard");        
       }      
@@ -82,12 +83,14 @@ export default function MerchantRegistrationForm() {
       return;
     }
 
+    if(!user) return;
+
     setIsLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      await addNewMerchant(user?.uid!, {
+      await addNewMerchant(user.uid, {
         ...formData,
         categories: selectedCategories,
       });

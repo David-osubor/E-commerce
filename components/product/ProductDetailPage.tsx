@@ -15,32 +15,6 @@ import { getProducts } from "@/lib/firebase/crud";
 dayjs.extend(relativeTime);
 
 
-
-
-const relatedProducts = [
-  {
-    id: "2",
-    name: "iPhone 8 Plus",
-    description:
-      "Buy quality iPhone at used iPhone Store High end mobile and phones comes with original boxes",
-    image: "/prod3.png",
-  },
-  {
-    id: "3",
-    name: "iPhone 8 Plus",
-    description:
-      "Buy quality iPhone at used iPhone Store High end mobile and phones comes with original boxes",
-    image: "/prod3.png",
-  },
-  {
-    id: "4",
-    name: "iPhone 8 Plus",
-    description:
-      "Buy quality iPhone at used iPhone Store High end mobile and phones comes with original boxes",
-    image: "/prod3.png",
-  },
-];
-
 interface ProductDetailPageProps {
   product: DocumentData;
 }
@@ -64,7 +38,7 @@ export default function ProductDetailPage({
        
      };
      fetchProducts();
-   }, []);
+   }, [product.category]);
 
   const handleWhatsAppClick = () => {
     // Create WhatsApp message with product details

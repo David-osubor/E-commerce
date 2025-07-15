@@ -1,5 +1,4 @@
 
-import Header from "@/components/Header";
 import MerchantRegistrationForm from "@/components/merchant/MerchantRegistrationForm";
 
 export default function MerchantRegisterPage() {
