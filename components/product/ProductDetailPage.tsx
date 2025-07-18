@@ -29,7 +29,7 @@ export default function ProductDetailPage({
      const fetchProducts = async () => {
        const data = await getProducts();
        if(data !== undefined ){
-        const rProducts = data.filter((p) => p.category !== product.category);
+        const rProducts = data.filter((p) => p.category === product.category);
         if(rProducts){
           setRelatedProducts(rProducts);
         }
@@ -225,31 +225,34 @@ export default function ProductDetailPage({
               Related Products
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedProducts && relatedProducts.map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/product/${product.id}`}
-                  className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <div className="aspect-square bg-gray-100">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      {product.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-3">
-                      {product.description}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+              {relatedProducts &&
+                relatedProducts
+                  .filter((rproduct) => rproduct.id !== product.id)
+                  .map((rproduct) => (
+                    <Link
+                      key={rproduct.id}
+                      href={`/product/${rproduct.id}`}
+                      className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                    >
+                      <div className="aspect-square bg-gray-100">
+                        <Image
+                          src={rproduct.imageUrls[0]}
+                          alt={rproduct.name}
+                          width={200}
+                          height={200}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          {rproduct.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-3">
+                          {rproduct.description}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
             </div>
           </div>
         </div>
