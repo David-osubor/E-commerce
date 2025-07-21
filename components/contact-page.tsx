@@ -58,6 +58,7 @@ export default function ContactPage() {
         message: "",
       });
     } catch (error) {
+        console.log(error)
       toast("Error sending message, Please try again or contact us directly.");
     } finally {
       setIsSubmitting(false);
@@ -73,9 +74,9 @@ export default function ContactPage() {
             Get in Touch
           </h1>
           <p className="text-white/90 text-lg">
-            Have questions? We'd love to hear from you. Send us a message, use
-            our live chat support, or email us and we'll respond as soon as
-            possible.
+            Have questions? We&apos;d love to hear from you. Send us a message,
+            use our live chat support, or email us and we&apos;ll respond as
+            soon as possible.
           </p>
         </div>
       </section>
