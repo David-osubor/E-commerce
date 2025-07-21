@@ -9,7 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/context/AuthContext";
-import { addNewMerchant, getMerchantByUserId } from "@/lib/firebase/crud";
+import {
+  addNewMerchant,
+  getMerchantByUserId,
+  updateMerchant,
+} from "@/lib/firebase/crud";
 import { useRouter } from "next/navigation";
 
 const businessCategories = [
@@ -21,11 +25,17 @@ const businessCategories = [
   "ELECTRONICS AND GADGETS",
 ];
 
-export default function MerchantRegistrationForm() {
+interface MerchantFormProps {
+  isEditMode?: boolean;
+}
+
+export default function MerchantRegistrationForm({
+  isEditMode = false,
+}: MerchantFormProps) {
   const { user, loading } = useAuth();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
-    email: user?.email || "",
+    email: "",
     primaryPhone: "",
     whatsappNo: "",
     brandName: "",
@@ -36,27 +46,49 @@ export default function MerchantRegistrationForm() {
     country: "Nigeria",
   });
   const router = useRouter();
-  const [loadingMerchant, setLoadingMerchant] = useState(true)
+  const [loadingMerchant, setLoadingMerchant] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [merchantId, setMerchantId] = useState("")
 
-  useEffect(() => {  
+  useEffect(() => {
     if (!loading && !user) {
-      router.push('/');
+      router.push("/");
       return;
-    }  
-    
-    const getMerchantExist = async() => {
-      if(!user) return;
-      const response = await getMerchantByUserId(user.uid);
-      if(response?.id){
-        router.push("/merchant/dashboard");        
-      }      
-    setLoadingMerchant(false);
     }
-    getMerchantExist()
-  },[user])
+
+    const fetchMerchantData = async () => {
+      if (!user) return;
+
+      const response = await getMerchantByUserId(user.uid);
+
+      if (response) {
+        if (isEditMode) {
+          // Fill form with existing data in edit mode
+          setFormData({
+            email: response.data.email || user.email || "",
+            primaryPhone: response.data.primaryPhone || "",
+            whatsappNo: response.data.whatsappNo || "",
+            brandName: response.data.brandName || "",
+            address: response.data.address || "OOU Ibogun",
+            city: response.data.city || "",
+            state: response.data.state || "",
+            postalCode: response.data.postalCode || "",
+            country: response.data.country || "Nigeria",
+          });
+          setSelectedCategories(response.data.categories || []);
+          setMerchantId(response.id);
+        } else {
+          // Redirect to dashboard if merchant exists and not in edit mode
+          router.push("/merchant/dashboard");
+        }
+      }
+      setLoadingMerchant(false);
+    };
+
+    fetchMerchantData();
+  }, [user, isEditMode]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -83,31 +115,35 @@ export default function MerchantRegistrationForm() {
       return;
     }
 
-    if(!user) return;
+    if (!user) return;
 
     setIsLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      await addNewMerchant(user.uid, {
-        ...formData,
-        categories: selectedCategories,
-      });
-      setSuccess(true);
+      if (isEditMode) {
+        await updateMerchant(merchantId, {
+          ...formData,
+          categories: selectedCategories,
+        });
+        setSuccess(true);
+      } else {
+        await addNewMerchant(user.uid, {
+          ...formData,
+          categories: selectedCategories,
+        });
+        setSuccess(true);
+      }
       router.push("/merchant/dashboard");
     } catch (err) {
-      if (
-        err instanceof Error &&
-        err.message === "User already has a merchant store."
-      ) {
-        router.push("/merchant/dashboard");
-      }
-      console.error("Failed to create merchant:", err);
+      console.error("Failed to process merchant:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to create merchant account. Please try again."
+          : `Failed to ${
+              isEditMode ? "update" : "create"
+            } merchant account. Please try again.`
       );
     } finally {
       setIsLoading(false);
@@ -129,10 +165,14 @@ export default function MerchantRegistrationForm() {
       <section className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-16">
         <div className="container mx-auto text-center">
           <h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
-            Join DigiMart as a Merchant
+            {isEditMode
+              ? "Update Your Merchant Profile"
+              : "Join DigiMart as a Merchant"}
           </h1>
           <p className="text-white/90 text-lg">
-            Start selling your products to millions of customers today
+            {isEditMode
+              ? "Update your business information"
+              : "Start selling your products to millions of customers today"}
           </p>
         </div>
       </section>
@@ -147,7 +187,8 @@ export default function MerchantRegistrationForm() {
             {/* Show success message */}
             {success && (
               <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-md border border-green-200">
-                Merchant account created successfully!
+                Merchant account {isEditMode ? "updated" : "created"}{" "}
+                successfully!
               </div>
             )}
 
@@ -179,6 +220,7 @@ export default function MerchantRegistrationForm() {
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className="mt-1"
                     required
+                    disabled={isEditMode} // Disable email in edit mode
                   />
                 </div>
 
@@ -398,6 +440,8 @@ export default function MerchantRegistrationForm() {
                     <Loader2 className="animate-spin h-4 w-4 mr-2" />
                     <span>Loading...</span>
                   </div>
+                ) : isEditMode ? (
+                  "Update Merchant Account"
                 ) : (
                   "Create Merchant Account"
                 )}

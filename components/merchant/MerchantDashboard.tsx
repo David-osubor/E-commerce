@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LogOut, Plus, Edit, Trash2, Menu, X } from "lucide-react";
+import { LogOut, Plus, Edit, Trash2, Menu, X, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import AddProductDialog from "./AddProductDialog";
@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { addNewProduct, deleteProduct, getMerchantByUserId, getMerchantProducts, updateProduct } from "@/lib/firebase/crud";
 import { DocumentData } from "firebase/firestore";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
+import Link from "next/link"
 
 
 const categories = ["All", "Application", "Utensils", "Food stuff"];
@@ -185,13 +185,19 @@ export default function MerchantDashboard() {
                 {(merchant?.brandName || "Merchant").slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-lg font-medium text-gray-900 capitalize">
+            <span className="text-lg font-medium text-gray-900 capitalize mb-12">
               {merchant?.brandName || "Merchant"}
             </span>
+            <Link href="/merchant/dashboard/edit" className="mt-auto">
+              <Button className="py-3 rounded-lg">
+                <Edit2 className="w-4 h-4 mr-2" />
+                Update Store
+              </Button>
+            </Link>
           </div>
 
           {/* Logout Button */}
-          <div className="mt-auto flex justify-center">
+          <div className="mt-auto flex justify-center mt-12">
             <Button
               onClick={logout}
               className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg"
@@ -220,9 +226,15 @@ export default function MerchantDashboard() {
                 {(merchant?.brandName || "Merchant").slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-lg font-medium text-gray-900 capitalize">
+            <span className="text-lg font-medium text-gray-900 capitalize mb-12">
               {merchant?.brandName || "Merchant"}
             </span>
+            <Link href="/merchant/dashboard/edit">
+              <Button className="w-full py-3 rounded-lg">
+                <Edit2 className="w-4 h-4 mr-2" />
+                Update Store
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -243,7 +255,7 @@ export default function MerchantDashboard() {
         {/* Header */}
         <div className="flex flex-col mb-6 md:mb-8 gap-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">
+            <h2 className="text-lg md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">
               Product Categories
             </h2>
             <Button

@@ -92,6 +92,38 @@ export async function addNewMerchant(
   }
 }
 
+export async function updateMerchant(
+  merchantId: string,
+  updatedMerchant: Partial<MerchantDataType>
+) {
+  try {
+    if (!updatedMerchant.brandName?.trim() || !updatedMerchant.primaryPhone?.trim()) {
+      throw new Error("Brand name and primary phone are required.");
+    }
+
+    const merchantRef = doc(db, "merchant", merchantId);
+    const merchantSnapshot = await getDoc(merchantRef);
+    console.log(merchantRef);
+
+    if (!merchantSnapshot.exists()) {
+      throw new Error("Merchant account not found.");
+    }
+
+    const cleanedPayload = {
+      ...updatedMerchant,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await updateDoc(merchantRef, cleanedPayload);
+
+    console.log("✅ Merchant updated successfully.");
+    return true;
+  } catch (error) {
+    console.error("❌ Error updating merchant:", error);
+    throw new Error("Merchant update failed.");
+  } 
+}
+
 export async function getMerchantByUserId(userId: string) {
   try {
     const merchantQuery = query(

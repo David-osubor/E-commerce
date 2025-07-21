@@ -16,16 +16,6 @@ export default function Footer() {
             <div className="space-y-3">
               <p className="text-sm">Subscribe</p>
               <p className="text-sm">Get 10% off your first order</p>
-              <div className="flex">
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="bg-transparent border-white text-white placeholder:text-white/70 rounded-r-none"
-                />
-                <Button className="bg-white text-blue-600 hover:bg-white/90 rounded-l-none">
-                  →
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -35,7 +25,9 @@ export default function Footer() {
             <div className="space-y-3 text-sm">
               <p>support@digimart.com</p>
               <p>Safety tips</p>
-              <p>Contact Us</p>
+              <Link href="/contact" className="block hover:underline">
+                Contact Us
+              </Link>
             </div>
           </div>
 
@@ -85,11 +77,7 @@ export default function Footer() {
 
           {/* Download App */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Download App</h3>
             <div className="space-y-4">
-              {/* QR Code Placeholder */}
-              <div className="w-20 h-20 bg-white rounded"></div>
-
               {/* Social Media Icons */}
               <div className="flex space-x-3">
                 <Facebook className="h-5 w-5 cursor-pointer hover:opacity-80" />
