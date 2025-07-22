@@ -77,7 +77,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="border-t border-white/20 mt-8 pt-6 text-center text-sm">
-          <p>© Copyright 2021. All right reserved</p>
+          <p>© Copyright 2025. All right reserved</p>
         </div>
       </div>
 
