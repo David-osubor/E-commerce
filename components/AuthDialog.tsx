@@ -176,9 +176,6 @@ export default function AuthDialog({ authType }: { authType: "login" | "signup" 
                       Remember Me
                     </label>
                   </div>
-                  <Link href="#" className="underline text-xs">
-                    Forget Password?
-                  </Link>
                 </div>
               )}
 

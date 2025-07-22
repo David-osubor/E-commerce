@@ -23,7 +23,6 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <div className="space-y-3 text-sm">
               <p>support@digimart.com</p>
-              <p>Safety tips</p>
               <Link href="/contact" className="block hover:underline">
                 Contact Us
               </Link>
@@ -46,15 +45,6 @@ export default function Footer() {
               >
                 Terms & Conditions
               </Link>
-              <Link href="#" className="block hover:underline">
-                Privacy Policy
-              </Link>
-              <Link href="#" className="block hover:underline">
-                Billing Policy
-              </Link>
-              <Link href="#" className="block hover:underline">
-                Candidate Privacy Policy
-              </Link>
             </div>
           </div>
 
@@ -67,9 +57,6 @@ export default function Footer() {
                 className="block hover:underline"
               >
                 Terms Of Use
-              </Link>
-              <Link href="#" className="block hover:underline">
-                FAQ
               </Link>
             </div>
           </div>
